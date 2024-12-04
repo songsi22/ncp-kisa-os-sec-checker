@@ -140,34 +140,39 @@ fi
 
 
 # TMOUT 600
-PROFILE_FILES=("/etc/profile" "/etc/.profile")
+PROFILE_FILE="/etc/profile"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+BACKUP_FILE="${PROFILE_FILE}.bak.${TIMESTAMP}"
 
-# Set values
 TMOUT_SETTING="TMOUT=600"
 EXPORT_SETTING="export TMOUT"
 
-for PROFILE_FILE in "${PROFILE_FILES[@]}"; do
-  if [[ -f $PROFILE_FILE ]]; then
-    echo "Modifying $PROFILE_FILE..."
-
-    # Replace or add TMOUT setting
-    if grep -q "^TMOUT=" "$PROFILE_FILE"; then
-      sed -i "s/^TMOUT=.*/$TMOUT_SETTING/" "$PROFILE_FILE"
-      echo "TMOUT updated to $TMOUT_SETTING."
-    else
-      echo "$TMOUT_SETTING" >> "$PROFILE_FILE"
-      echo "TMOUT added: $TMOUT_SETTING."
-    fi
-
-    # Add export TMOUT if missing
-    if ! grep -q "^export TMOUT" "$PROFILE_FILE"; then
-      echo "$EXPORT_SETTING" >> "$PROFILE_FILE"
-      echo "Added export TMOUT: $EXPORT_SETTING."
-    fi
+# Check if the profile file exists
+if [[ -f $PROFILE_FILE ]]; then
+  echo "Backing up $PROFILE_FILE to $BACKUP_FILE..."
+  cp "$PROFILE_FILE" "$BACKUP_FILE"
+  
+  echo "Modifying $PROFILE_FILE..."
+  
+  # Replace or add TMOUT setting
+  if grep -q "^TMOUT=" "$PROFILE_FILE"; then
+    sed -i "s/^TMOUT=.*/$TMOUT_SETTING/" "$PROFILE_FILE"
+    echo "TMOUT updated to $TMOUT_SETTING."
   else
-    echo "$PROFILE_FILE does not exist. Skipping."
+    echo "$TMOUT_SETTING" >> "$PROFILE_FILE"
+    echo "TMOUT added: $TMOUT_SETTING."
   fi
-done
+  
+  # Add export TMOUT if missing
+  if ! grep -q "^export TMOUT" "$PROFILE_FILE"; then
+    echo "$EXPORT_SETTING" >> "$PROFILE_FILE"
+    echo "Added export TMOUT: $EXPORT_SETTING."
+  fi
+
+  echo "Modifications to $PROFILE_FILE complete."
+else
+  echo "$PROFILE_FILE does not exist. Exiting."
+fi
 
 # PAM SU
 PAM_SU_FILE="/etc/pam.d/su"
