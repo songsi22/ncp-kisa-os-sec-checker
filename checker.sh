@@ -197,3 +197,4 @@ fi
 
 chmod 400 /etc/hosts
 chmod 4750 /usr/bin/su
+chmod 640 /etc/hosts.allow /etc/hosts.deny /etc/cron.deny
